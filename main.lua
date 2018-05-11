@@ -5,7 +5,7 @@
 -- Created by: Wendi Yu
 -- Created on: May 2018
 -- 
--- This file animates a charact using a spritesheet
+-- make a character animate and then move forward, while being on a physics world
 -----------------------------------------------------------------------------------------
 
 display.setStatusBar(display.HiddenStatusBar)
@@ -121,7 +121,7 @@ local sheetOptionsWalk =
 local sheetWalkNinja = graphics.newImageSheet( "./assets/spritesheets/ninjaBoyRun.png", sheetOptionsWalk )
 
 -- sequences table
-local sequence_data = {
+local sequence_data_ninja = {
     -- consecutive frames sequence
     {
         name = "idle",
@@ -130,15 +130,7 @@ local sequence_data = {
         time = 800,
         loopCount = 0,
         sheet = sheetIdleNinja
-    },
-    {
-        name = "idle",
-        start = 1,
-        count = 10,
-        time = 800,
-        loopCount = 0,
-        sheet = sheetIdleRobot
-    },
+    }, 
     {
         name = "attack",
         start = 1,
@@ -156,14 +148,6 @@ local sequence_data = {
         sheet = sheetWalkNinja
     },
     {
-        name = "dead",
-        start = 1,
-        count = 8,
-        time = 1000,
-        loopCount = 0,
-        sheet = sheetOptionsDead
-    },
-    {
         name = "jump",
         start = 1,
         count = 8,
@@ -173,7 +157,27 @@ local sequence_data = {
     }              
 }
 
-local Ninja = display.newSprite( sheetIdleNinja, sequence_data )
+local sequence_data_robot = {
+	-- consecutive frames sequence
+	{
+        name = "idle",
+        start = 1,
+        count = 10,
+        time = 800,
+        loopCount = 0,
+        sheet = sheetIdleRobot
+    },
+    {
+        name = "dead",
+        start = 1,
+        count = 8,
+        time = 1000,
+        loopCount = 0,
+        sheet = sheetOptionsDead
+    }
+}
+
+local Ninja = display.newSprite( sheetIdleNinja, sequence_data_ninja )
 Ninja.x = centerX
 Ninja.y = centerY
 Ninja.id = "the character"
@@ -187,7 +191,7 @@ Ninja.isFixedRotation = true -- If you apply this property before the physics.ad
 Ninja:setSequence( "idle" )
 Ninja:play()
 
-local Robot = display.newSprite( sheetIdleRobot, sequence_data )
+local Robot = display.newSprite( sheetIdleRobot, sequence_data_robot )
 Robot.x = centerX + 400
 Robot.y = centerY
 Robot.id = "bad character"
@@ -199,6 +203,13 @@ physics.addBody(Robot, "dynamic", {
 
 Robot:setSequence( "idle" )
 Robot:play()
+
+-- After a short time, swap the sequence to 'seq2' which uses the second image sheet
+local function swapSheet()
+    Ninja:setSequence( "idle" )
+    Ninja:play()
+    print("idle")
+end
 
 local function characterCollision( self, event )
  
@@ -238,8 +249,9 @@ local function onCollision( event )
         if ( ( obj1.id == "bad character" and obj2.id == "bullet" ) or
              ( obj1.id == "bullet" and obj2.id == "bad character" ) ) then
             -- Remove both the laser and asteroid
-            display.remove( obj1 )
-            display.remove( obj2 )          
+            --display.remove( obj1 )
+            display.remove( obj2 )
+
  			
  			-- remove the bullet
  			local bulletCounter = nil
@@ -253,9 +265,13 @@ local function onCollision( event )
                 end
             end
 
-            --remove character
-            Robot:removeSelf()
-            Robot = nil
+            Robot:setSequence( "dead" )
+            Robot:play()
+
+
+           --remove character
+            --Robot:removeSelf()
+            --Robot = nil
 
             -- Increase score
             print ("you could increase a score here.")
@@ -309,11 +325,13 @@ function rightArrow:touch( event )
             time = 800 
             } )
         Ninja:setSequence( "walk" )
-        Ninja:play()
+        Ninja:play()  
+        timer.performWithDelay( 1000, swapSheet )      
     end
 
     return true
 end
+
 
 function leftArrow:touch( event )
     if ( event.phase == "ended" ) then
@@ -337,6 +355,7 @@ function jumpButton:touch( event )
        Ninja:setLinearVelocity( 0, -750 )
        Ninja:setSequence( "jump" )
        Ninja:play()
+       timer.performWithDelay( 1500, swapSheet )
     end 
     
     return true    
@@ -358,6 +377,10 @@ function shootButton:touch( event )
 
         table.insert(playerBullets,aSingleBullet)
         print("# of bullet: " .. tostring(#playerBullets))
+
+        Ninja:setSequence( "attack" )
+        Ninja:play()
+        timer.performWithDelay( 800, swapSheet )
     end
 
     return true
