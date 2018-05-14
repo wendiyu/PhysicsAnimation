@@ -106,11 +106,11 @@ local sheetJumpNinja = graphics.newImageSheet( "./assets/spritesheets/ninjaBoyJu
 
 local sheetOptionsDead =
 {
-    width = 362,
-    height = 483,
+    width = 562,
+    height = 519,
     numFrames = 10
 }
-local sheetDeadRobot = graphics.newImageSheet( "./assets/spritesheets/ninjaBoyJump.png", sheetOptionsDead )
+local sheetDeadRobot = graphics.newImageSheet( "./assets/spritesheets/robotDead.png", sheetOptionsDead )
 
 local sheetOptionsWalk =
 {
@@ -170,10 +170,10 @@ local sequence_data_robot = {
     {
         name = "dead",
         start = 1,
-        count = 8,
+        count = 10,
         time = 1000,
-        loopCount = 0,
-        sheet = sheetOptionsDead
+        loopCount = 1,
+        sheet = sheetDeadRobot
     }
 }
 
@@ -248,11 +248,7 @@ local function onCollision( event )
 
         if ( ( obj1.id == "bad character" and obj2.id == "bullet" ) or
              ( obj1.id == "bullet" and obj2.id == "bad character" ) ) then
-            -- Remove both the laser and asteroid
-            --display.remove( obj1 )
-            display.remove( obj2 )
-
- 			
+            
  			-- remove the bullet
  			local bulletCounter = nil
  			
@@ -265,13 +261,10 @@ local function onCollision( event )
                 end
             end
 
+           --remove character
             Robot:setSequence( "dead" )
             Robot:play()
 
-
-           --remove character
-            --Robot:removeSelf()
-            --Robot = nil
 
             -- Increase score
             print ("you could increase a score here.")
